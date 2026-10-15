@@ -30,7 +30,7 @@ SYMBOLS_ITALIC_FILE = "ofl/googlesanscode/GoogleSansCode-Italic%5Bwght%5D.ttf"
 LICENSES = {"Google Sans Flex": "ofl/googlesansflex/OFL.txt", "Google Sans Code": "ofl/googlesanscode/OFL.txt"}
 MODIFICATION_COPYRIGHT = "Modifications Copyright 2026 The Citropy Authors"
 
-VERSION = "1.000"
+VERSION = "1.001"
 OUTPUT_FONTS = Path("fonts/webfonts")
 OUTPUT_TTF = Path("fonts/ttf")
 OUTPUT_LICENSE = Path("OFL.txt")
@@ -532,7 +532,13 @@ def build(style, wght, italic):
             for contour in path.contours:
                 x0, y0, x1, y1 = contour.bounds
                 w, h = x1 - x0, y1 - y0
-                if w < 2.2 * stem and h < 2.2 * stem and 0.7 < w / h < 1.4:
+                if w < 2.2 * stem and h < 2.2 * stem and 0.7 < w / h < 1.4 and ch in "ij":
+                    # sized from the stem and dropped to the ascender, so the dot doesn't tower over l and the capitals
+                    radius = stem * 0.55
+                    cy = max(asc, xh + stem * 0.55 + 2 * radius) - radius
+                    lean = (cy - (y0 + y1) / 2) * math.tan(math.radians(-SLANT)) if italic else 0
+                    contour = ellipse((x0 + x1) / 2 + lean, cy, radius, radius)
+                elif w < 2.2 * stem and h < 2.2 * stem and 0.7 < w / h < 1.4:
                     radius = max(w, h) * 0.6
                     contour = ellipse((x0 + x1) / 2, y0 + radius, radius, radius)
                 elif ch in ",;":
